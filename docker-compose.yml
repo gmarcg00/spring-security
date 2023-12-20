@@ -1,0 +1,17 @@
+version: "3.8"
+
+services:
+  mysql:
+    image: mysql:latest
+    container_name: mysql-container
+    ports:
+      - "3306:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: 1234
+      MYSQL_DATABASE: security_bank
+      MYSQL_USER: guille
+      MYSQL_PASSWORD: guille1234
+    restart: always
+    volumes:
+      - ./db/sql/create_schema.sql:/docker-entrypoint-initdb.d/create_schema.sql
+      - ./db/sql/data.sql:/docker-entrypoint-initdb.d/data.sql
