@@ -19,7 +19,7 @@ public class ApiKeyFilter extends OncePerRequestFilter {
        try{
            Optional<String> apiKeyOpt = Optional.of(request.getHeader(apiKeyHeader));
            final var apiKey = apiKeyOpt.orElseThrow(() -> new BadCredentialsException("Missing API Key"));
-           if(apiKey.equals(API_KEY )) {
+           if(apiKey.equals(API_KEY )){
                filterChain.doFilter(request, response);
            }else{
                throw new BadCredentialsException("Invalid API Key");
