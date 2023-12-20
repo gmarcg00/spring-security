@@ -2,9 +2,12 @@ package dev.security;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.Customizer;
+import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.www.BasicAuthenticationFilter;
 import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
@@ -19,8 +22,8 @@ import java.util.List;
 @EnableMethodSecurity
 public class SecurityConfig {
     @Bean
-    SecurityFilterChain filterChain(HttpSecurity http){
-        http.addFilterBefore(new ApiKeyFilter(), BasicAuthenticationFilter.class);
+    SecurityFilterChain filterChain(HttpSecurity http, JwtValidationFilter jwtValidationFilter) throws Exception {
+        http.sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
         var requestHandler = new CsrfTokenRequestAttributeHandler();
         try {
              http.authorizeHttpRequests(auth ->
@@ -31,9 +34,11 @@ public class SecurityConfig {
                     .formLogin(Customizer.withDefaults())
                     .httpBasic(Customizer.withDefaults());
 
+             http.addFilterAfter(jwtValidationFilter, BasicAuthenticationFilter.class);
+
              http.cors(cors -> corsConfigurationSource());
              http.csrf(csrf -> csrf.csrfTokenRequestHandler(requestHandler)
-                     .ignoringRequestMatchers("/welcome","/about_us")
+                     .ignoringRequestMatchers("/welcome","/about_us","/authenticate")
                      .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse()))
              .addFilterAfter( new CsrfCookieFilter(), BasicAuthenticationFilter.class);
              return http.build();
@@ -78,6 +83,11 @@ public class SecurityConfig {
       source.registerCorsConfiguration("/**", corsConfiguration);
 
       return source;
+    }
+
+    @Bean
+    public AuthenticationManager authenticationManager(AuthenticationConfiguration authenticationConfiguration) throws Exception {
+        return authenticationConfiguration.getAuthenticationManager();
     }
 
 }
