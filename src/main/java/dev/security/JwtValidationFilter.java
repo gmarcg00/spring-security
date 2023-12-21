@@ -48,6 +48,8 @@ public class JwtValidationFilter extends OncePerRequestFilter {
                 var usernamePasswordAuthenticationToken = new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
                 usernamePasswordAuthenticationToken.setDetails(userDetails);
                 SecurityContextHolder.getContext().setAuthentication(usernamePasswordAuthenticationToken);
+            }else{
+                throw new RuntimeException("Invalid JWT Token");
             }
         }
 
